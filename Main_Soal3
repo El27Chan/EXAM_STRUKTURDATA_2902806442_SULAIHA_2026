@@ -1,0 +1,171 @@
+
+public class Main_Soal3 {
+
+    static class Graph {
+        private final int[][] tetangga;
+        private final int[] jumlah;
+
+        // Constructor untuk membuat graph
+        Graph(int n) {
+            if (n <= 0) {
+                throw new IllegalArgumentException(
+                    "Jumlah simpul harus positif"
+                );
+            }
+
+            tetangga = new int[n][];
+            jumlah = new int[n];
+
+            // Kapasitas awal setiap daftar tetangga
+            for (int i = 0; i < n; i++) {
+                tetangga[i] = new int[2];
+                jumlah[i] = 0;
+            }
+        }
+
+        // Memastikan indeks simpul valid
+        private void validasi(int a) {
+            if (a < 0 || a >= tetangga.length) {
+                throw new IllegalArgumentException(
+                    "Simpul tidak valid: " + a
+                );
+            }
+        }
+
+        // Menambahkan satu tetangga ke simpul
+        private void tambahSatuArah(int a, int b) {
+
+            // memperbesar array jika kapasitas penuh
+            if (jumlah[a] == tetangga[a].length) {
+                int kapasitasBaru =
+                    tetangga[a].length * 2;
+
+                int[] baru = new int[kapasitasBaru];
+
+                // menyalin elemen dari array lama
+                for (int i = 0; i < jumlah[a]; i++) {
+                    baru[i] = tetangga[a][i];
+                }
+
+                tetangga[a] = baru;
+            }
+
+            // memasukkan tetangga baru
+            tetangga[a][jumlah[a]] = b;
+            jumlah[a]++;
+        }
+
+        // Menambahkan jalan dua arah
+        void tambahJalan(int a, int b) {
+            validasi(a);
+            validasi(b);
+
+            tambahSatuArah(a, b);
+            tambahSatuArah(b, a);
+        }
+
+        // BFS untuk mencari driver terdekat
+        int bfsCariTerdekat(
+            int asal,
+            boolean[] adalahDriver
+        ) {
+            validasi(asal);
+
+            int n = tetangga.length;
+
+            if (adalahDriver == null ||
+                adalahDriver.length != n) {
+                throw new IllegalArgumentException(
+                    "Panjang data driver tidak sesuai"
+                );
+            }
+
+            // Array penanda simpul yang dikunjungi
+            boolean[] dikunjungi = new boolean[n];
+
+            // Queue BFS menggunakan array biasa
+            int[] antrean = new int[n];
+
+            int depan = 0;
+            int belakang = 0;
+
+            // Masukkan simpul asal
+            antrean[belakang++] = asal;
+            dikunjungi[asal] = true;
+
+            // Proses BFS
+            while (depan < belakang) {
+
+                // Ambil simpul dari depan queue
+                int sekarang = antrean[depan++];
+
+                // Jika ada driver, kembalikan simpul
+                if (adalahDriver[sekarang]) {
+                    return sekarang;
+                }
+
+                // Periksa seluruh tetangga
+                for (int i = 0;
+                     i < jumlah[sekarang];
+                     i++) {
+
+                    int berikut =
+                        tetangga[sekarang][i];
+
+                    // Masukkan jika belum dikunjungi
+                    if (!dikunjungi[berikut]) {
+                        dikunjungi[berikut] = true;
+                        antrean[belakang++] = berikut;
+                    }
+                }
+            }
+
+            // Tidak ditemukan driver
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+
+        // Membuat graph dengan 8 simpul (0-7)
+        Graph peta = new Graph(8);
+
+        // Menambahkan ruas jalan dua arah
+        peta.tambahJalan(0, 1);
+        peta.tambahJalan(0, 2);
+        peta.tambahJalan(1, 3);
+        peta.tambahJalan(2, 4);
+        peta.tambahJalan(3, 5);
+        peta.tambahJalan(4, 5);
+        peta.tambahJalan(4, 6);
+        peta.tambahJalan(5, 7);
+        peta.tambahJalan(6, 7);
+
+        // Menandai lokasi driver
+        boolean[] driver = new boolean[8];
+
+        driver[3] = true;
+        driver[6] = true;
+        driver[7] = true;
+
+        // Simulasi penumpang pertama
+        int hasil1 = peta.bfsCariTerdekat(
+            0, driver
+        );
+
+        // Simulasi penumpang kedua
+        int hasil2 = peta.bfsCariTerdekat(
+            5, driver
+        );
+
+        System.out.println(
+            "Penumpang di simpul 0 -> " +
+            "Driver terdekat: " + hasil1
+        );
+
+        System.out.println(
+            "Penumpang di simpul 5 -> " +
+            "Driver terdekat: " + hasil2
+        );
+    }
+}
